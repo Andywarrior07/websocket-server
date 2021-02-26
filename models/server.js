@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const { socketController } = require('../sockets/controller');
 
 class Server {
   port = process.env.PORT;
@@ -7,9 +8,13 @@ class Server {
 
   constructor() {
     this.app = express();
+    this.server = require('http').createServer(this.app);
+    this.io = require('socket.io')(this.server);
 
     this.middlewares();
     this.routes();
+
+    this.sockets();
   }
   middlewares() {
     this.app.use(cors());
@@ -18,8 +23,12 @@ class Server {
 
   routes() {}
 
+  sockets() {
+    this.io.on('connection', socketController);
+  }
+
   listen() {
-    this.app.listen(this.port, () => {
+    this.server.listen(this.port, () => {
       console.log(`App listening in http://localhost:${this.port}`);
     });
   }
